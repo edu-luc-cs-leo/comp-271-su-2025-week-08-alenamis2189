@@ -56,6 +56,46 @@ public class HashTable<E extends Comparable<E>> {
      * @param content E The content of a new node, to be placed in the array.
      */
     public void add(E content) {
+        // Calculate the load factor of the table
+        this.loadFactor = (double) this.usage / this.underlying.length;
+        // If the table is full, it will rehash
+        if (this.loadFactor >= LOAD_FACTOR_THRESHOLD){
+        // Saves the old array
+        Node<E>[] oldArray = this.underlying;
+        // Creates the temporary array double the size of the old one
+        Node<E>[] tempArray = new Node[oldArray.length * 2];
+        this.usage = 0;
+        this.totalNodes = 0;
+        // Switch to the temporary array
+        this.underlying = tempArray;
+        // Insert all nodes to the temporary array from the old one
+        for (int i = 0; i < oldArray.length; i++){
+            Node<E> current = oldArray[i];
+
+            while (current != null){
+                // Get the value from the node
+                E value = current.getContent();
+                // Calculate temporary array length
+                int newPosition = Math.abs(value.hashCode()) % this.underlying.length;
+                // Create the node with the same value
+                Node<E> newNode = new Node<E> (value);
+                // Place the node if the position is empty
+                if (this.underlying[newPosition] == null) {
+                    this.underlying[newPosition] = newNode;
+                     this.usage += 1;
+        } else {
+            // If selected position in use, link the node to the existing list
+            newNode.setNext(this.underlying[newPosition]);
+            this.underlying[newPosition] = newNode;
+        }
+        // Update the number of nodes
+        this.totalNodes += 1;
+        // Move to the next node
+        current = current.getNext();
+            }
+        }
+
+        }
         // Create the new node to add to the hashtable
         Node<E> newNode = new Node<E>(content);
         // Use the hashcode for the new node's contents to find where to place it in the
@@ -85,12 +125,27 @@ public class HashTable<E extends Comparable<E>> {
      * hashcode. The linked list must then be traversed to determine if a node with
      * similar content and the target value is present or not.
      * 
-     * @param target E value to searc for
+     * @param target E value to search for
      * @return true if target value is present in one of the linked lists of the
      *         underlying array; false otherwise.
      */
     public boolean contains(E target) {
-        return false;
+        boolean result = false;
+         // Calculate the array length
+         int position = Math.abs(target.hashCode()) % this.underlying.length;
+         // Get the first node at this position
+         Node current = this.underlying[position];
+         // Traverse the linked list
+         while (current != null){
+            // Check if the node value equals the target value
+            if (current.getContent().equals(target)) {
+                result = true;
+            }
+            // Move to the next one
+            current = current.getNext();
+        }
+        // Return the result
+        return result;
     } // method contains
 
     /** Constants for toString */
